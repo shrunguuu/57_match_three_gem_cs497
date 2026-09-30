@@ -165,7 +165,7 @@ class Board:
                 gem.current_y = -((empty_slots - r) * TILE_SIZE)
                 self.grid[r][c] = gem
 
-        def resolve_matches(self):
+     def resolve_matches(self):
           cascade = 1
 
            while True:
