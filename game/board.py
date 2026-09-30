@@ -19,6 +19,8 @@ class Gem:
         self.color = color
         self.target_row = target_row
         self.col = col
+        self.is_bomb = is_bomb
+        self.bomb_direction = bomb_direction  # "row" or "column"
         # Start higher up to animate falling down
         self.current_y = (target_row - 2) * TILE_SIZE
         self.target_y = target_row * TILE_SIZE
@@ -93,33 +95,74 @@ class Board:
         r2, c2 = pos2
         return abs(r1 - r2) + abs(c1 - c2) == 1
 
-    def find_matches(self):
-        """Scan grid for horizontal and vertical 3-in-a-row color matches."""
-        matched = set()
+   def find_matches(self):
+    """Find horizontal and vertical matches and detect 4-in-a-row bombs."""
+    matched = set()
+    self.bomb_matches = []
 
-        # Horizontal matches
-        for r in range(GRID_SIZE):
-            for c in range(GRID_SIZE - 2):
-                if (
-                    self.grid[r][c]
-                    and self.grid[r][c + 1]
-                    and self.grid[r][c + 2]
-                    and self.grid[r][c].color == self.grid[r][c + 1].color == self.grid[r][c + 2].color
-                ):
-                    matched.update([(r, c), (r, c + 1), (r, c + 2)])
+    # Horizontal matches
+    for r in range(GRID_SIZE):
+        c = 0
 
-        # Vertical matches
-        for r in range(GRID_SIZE - 2):
-            for c in range(GRID_SIZE):
-                if (
-                    self.grid[r][c]
-                    and self.grid[r + 1][c]
-                    and self.grid[r + 2][c]
-                    and self.grid[r][c].color == self.grid[r + 1][c].color == self.grid[r + 2][c].color
-                ):
-                    matched.update([(r, c), (r + 1, c), (r + 2, c)])
+        while c < GRID_SIZE:
+            if self.grid[r][c] is None:
+                c += 1
+                continue
 
-        return matched
+            color = self.grid[r][c].color
+            start = c
+
+            while (
+                c < GRID_SIZE
+                and self.grid[r][c] is not None
+                and self.grid[r][c].color == color
+            ):
+                c += 1
+
+            length = c - start
+
+            if length >= 3:
+                for col in range(start, c):
+                    matched.add((r, col))
+
+            if length >= 4:
+                bomb_col = start + length // 2
+                self.bomb_matches.append(
+                    (r, bomb_col, "row")
+                )
+
+    # Vertical matches
+    for c in range(GRID_SIZE):
+        r = 0
+
+        while r < GRID_SIZE:
+            if self.grid[r][c] is None:
+                r += 1
+                continue
+
+            color = self.grid[r][c].color
+            start = r
+
+            while (
+                r < GRID_SIZE
+                and self.grid[r][c] is not None
+                and self.grid[r][c].color == color
+            ):
+                r += 1
+
+            length = r - start
+
+            if length >= 3:
+                for row in range(start, r):
+                    matched.add((row, c))
+
+            if length >= 4:
+                bomb_row = start + length // 2
+                self.bomb_matches.append(
+                    (bomb_row, c, "column")
+                )
+
+    return matched
 
     def drop_and_refill(self):
         for c in range(GRID_SIZE):
