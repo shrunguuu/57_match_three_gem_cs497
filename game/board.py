@@ -97,16 +97,15 @@ class Board:
 
     def find_matches(self):
     """Find horizontal and vertical matches and detect 4-in-a-row bombs."""
-    matched = set()
-    self.bomb_matches = []
+      matched = set()
+      self.bomb_matches = []
    # Horizontal matches
-    for r in range(GRID_SIZE):
-        c = 0
-        while c < GRID_SIZE:
+      for r in range(GRID_SIZE):
+          c = 0
+          while c < GRID_SIZE:
             if self.grid[r][c] is None:
                 c += 1
                 continue
-
             color = self.grid[r][c].color
             start = c
 
@@ -117,29 +116,29 @@ class Board:
             ):
                 c += 1
 
-            length = c - start
+             length = c - start
 
-            if length >= 3:
+             if length >= 3:
                 for col in range(start, c):
                     matched.add((r, col))
 
-            if length >= 4:
+             if length >= 4:
                 bomb_col = start + length // 2
                 self.bomb_matches.append(
                     (r, bomb_col, "row")
                 )
 
     # Vertical matches
-    for c in range(GRID_SIZE):
-        r = 0
+      for c in range(GRID_SIZE):
+         r = 0
 
-        while r < GRID_SIZE:
-            if self.grid[r][c] is None:
+          while r < GRID_SIZE:
+             if self.grid[r][c] is None:
                 r += 1
                 continue
 
-            color = self.grid[r][c].color
-            start = r
+             color = self.grid[r][c].color
+             start = r
 
             while (
                 r < GRID_SIZE
@@ -148,13 +147,13 @@ class Board:
             ):
                 r += 1
 
-            length = r - start
+             length = r - start
 
-            if length >= 3:
+             if length >= 3:
                 for row in range(start, r):
                     matched.add((row, c))
 
-            if length >= 4:
+             if length >= 4:
                 bomb_row = start + length // 2
                 self.bomb_matches.append(
                     (bomb_row, c, "column")
