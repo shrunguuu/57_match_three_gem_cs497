@@ -151,10 +151,12 @@ class Board:
            
             for r, c in matches:
                 self.grid[r][c] = None
-             self.score += len(matches) * 10 * cascade
+            
+            self.score += len(matches) * 10 * cascade
                 
-             self.drop_and_refill()
-             cascade +=1
+            self.drop_and_refill()
+            
+            cascade +=1
 
     def process_swap(self, pos1, pos2):
         if not self.is_adjacent(pos1, pos2) or self.is_game_over() or self.is_animating():
