@@ -94,6 +94,7 @@ class Board:
         r1, c1 = pos1
         r2, c2 = pos2
         return abs(r1 - r2) + abs(c1 - c2) == 1
+
     def find_matches(self):
         matched = set()
         self.bomb_matches = []
@@ -145,10 +146,11 @@ class Board:
                     self.bomb_matches.append((bomb_row, c, "column"))
 
         return matched
+
     def drop_and_refill(self):
         for c in range(GRID_SIZE):
             empty_slots = 0
-        
+
             for r in range(GRID_SIZE - 1, -1, -1):
                 if self.grid[r][c] is None:
                     empty_slots += 1
@@ -165,38 +167,39 @@ class Board:
                 gem.current_y = -((empty_slots - r) * TILE_SIZE)
                 self.grid[r][c] = gem
 
-     def resolve_matches(self):
-          cascade = 1
+    def resolve_matches(self):
+        cascade = 1
 
-           while True:
-              matches = self.find_matches()
-              if not matches:
-                 break
+        while True:
+            matches = self.find_matches()
+            if not matches:
+                break
 
-              bomb_to_create = None
-              bomb_color = None
+            bomb_to_create = None
+            bomb_color = None
 
-              if self.bomb_matches:
-                  r, c, direction = self.bomb_matches[0]
-                  if self.grid[r][c]:
-                      bomb_to_create = (r, c, direction)
-                      bomb_color = self.grid[r][c].color
+            if self.bomb_matches:
+                r, c, direction = self.bomb_matches[0]
+                if self.grid[r][c]:
+                    bomb_to_create = (r, c, direction)
+                    bomb_color = self.grid[r][c].color
 
-              for r, c in matches:
-                  if bomb_to_create and (r, c) == bomb_to_create[:2]:
-                      continue
-                  self.grid[r][c] = None
+            for r, c in matches:
+                if bomb_to_create and (r, c) == bomb_to_create[:2]:
+                    continue
+                self.grid[r][c] = None
 
-              if bomb_to_create:
-                  r, c, direction = bomb_to_create
-                  bomb = Gem(bomb_color, r, c, True, direction)
-                  bomb.current_y = r * TILE_SIZE
-                  bomb.target_y = r * TILE_SIZE
-                  self.grid[r][c] = bomb
+            if bomb_to_create:
+                r, c, direction = bomb_to_create
+                bomb = Gem(bomb_color, r, c, True, direction)
+                bomb.current_y = r * TILE_SIZE
+                bomb.target_y = r * TILE_SIZE
+                self.grid[r][c] = bomb
 
-              self.score += len(matches) * 10 * cascade
-              self.drop_and_refill()
-              cascade += 1
+            self.score += len(matches) * 10 * cascade
+            self.drop_and_refill()
+            cascade += 1
+
     def process_swap(self, pos1, pos2):
         if not self.is_adjacent(pos1, pos2) or self.is_game_over() or self.is_animating():
             return False
@@ -204,15 +207,11 @@ class Board:
         self.swap_gems(pos1, pos2)
         matches = self.find_matches()
 
-        # BUG SYMPTOM:
-        # Move count decrements on EVERY swap attempt even invalid ones.
-        
-
         if not matches:
-            self.swap_gems(pos1, pos2)  # Revert invalid swap
+            self.swap_gems(pos1, pos2)
             return False
-        self.moves_remaining -= 1
 
+        self.moves_remaining -= 1
         self.resolve_matches()
         return True
 
