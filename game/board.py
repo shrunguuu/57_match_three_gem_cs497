@@ -95,15 +95,13 @@ class Board:
         r2, c2 = pos2
         return abs(r1 - r2) + abs(c1 - c2) == 1
 
-   def find_matches(self):
+    def find_matches(self):
     """Find horizontal and vertical matches and detect 4-in-a-row bombs."""
     matched = set()
     self.bomb_matches = []
-
-    # Horizontal matches
+   # Horizontal matches
     for r in range(GRID_SIZE):
         c = 0
-
         while c < GRID_SIZE:
             if self.grid[r][c] is None:
                 c += 1
