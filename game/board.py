@@ -165,37 +165,38 @@ class Board:
                 gem.current_y = -((empty_slots - r) * TILE_SIZE)
                 self.grid[r][c] = gem
 
-    def resolve_matches(self):
-        cascade = 1
-        
-        while True:
-            matches = self.find_matches()
-            if not matches:
-                break
-            bomb_to_create = None
-            bomb_color = None
+        def resolve_matches(self):
+          cascade = 1
 
-             if self.bomb_matches:
-                r, c, direction = self.bomb_matches[0]
-                if self.grid[r][c]:
-                  bomb_to_create = (r, c, direction)
-                  bomb_color = self.grid[r][c].color
+           while True:
+              matches = self.find_matches()
+              if not matches:
+                 break
 
-            for r, c in matches:
-                self.grid[r][c] = None
-            if bomb_to_create:
-              r, c, direction = bomb_to_create
-              bomb = Gem(bomb_color, r, c, True, direction)
-              bomb.current_y = r * TILE_SIZE
-              bomb.target_y = r * TILE_SIZE
-              self.grid[r][c] = bomb
-            
-            self.score += len(matches) * 10 * cascade
-                
-            self.drop_and_refill()
-            
-            cascade +=1
+              bomb_to_create = None
+              bomb_color = None
 
+              if self.bomb_matches:
+                  r, c, direction = self.bomb_matches[0]
+                  if self.grid[r][c]:
+                      bomb_to_create = (r, c, direction)
+                      bomb_color = self.grid[r][c].color
+
+              for r, c in matches:
+                  if bomb_to_create and (r, c) == bomb_to_create[:2]:
+                      continue
+                  self.grid[r][c] = None
+
+              if bomb_to_create:
+                  r, c, direction = bomb_to_create
+                  bomb = Gem(bomb_color, r, c, True, direction)
+                  bomb.current_y = r * TILE_SIZE
+                  bomb.target_y = r * TILE_SIZE
+                  self.grid[r][c] = bomb
+
+              self.score += len(matches) * 10 * cascade
+              self.drop_and_refill()
+              cascade += 1
     def process_swap(self, pos1, pos2):
         if not self.is_adjacent(pos1, pos2) or self.is_game_over() or self.is_animating():
             return False
