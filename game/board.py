@@ -48,6 +48,8 @@ class Board:
         self.selected = None
         self.score = 0
         self.moves_remaining = max_moves
+        self.last_activity_time = pygame.time.get_ticks()
+        self.hint_positions = None
         self.reset()
 
     def reset(self):
@@ -94,6 +96,28 @@ class Board:
         r1, c1 = pos1
         r2, c2 = pos2
         return abs(r1 - r2) + abs(c1 - c2) == 1
+    def find_hint_move(self):
+        for r in range(GRID_SIZE):
+            for c in range(GRID_SIZE):
+                pos1 = (r, c)
+
+                for dr, dc in [(0, 1), (1, 0)]:
+                    r2 = r + dr
+                    c2 = c + dc
+
+                    if r2 >= GRID_SIZE or c2 >= GRID_SIZE:
+                        continue
+
+                    pos2 = (r2, c2)
+
+                    self.swap_gems(pos1, pos2)
+                    matches = self.find_matches()
+                    self.swap_gems(pos1, pos2)
+
+                    if matches:
+                        return (pos1, pos2)
+
+        return None
 
     def find_matches(self):
         matched = set()
@@ -203,7 +227,9 @@ class Board:
     def process_swap(self, pos1, pos2):
         if not self.is_adjacent(pos1, pos2) or self.is_game_over() or self.is_animating():
             return False
-
+        
+        self.last_activity_time = pygame.time.get_ticks()
+        self.hint_positions = None
         self.swap_gems(pos1, pos2)
         matches = self.find_matches()
 
@@ -231,6 +257,11 @@ class Board:
                 if self.grid[r][c]:
                     self.grid[r][c].update()
 
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.last_activity_time > 5000:
+            if self.hint_positions is None:
+                self.hint_positions = self.find_hint_move()
     def render(self, surface):
         board_rect = pygame.Rect(
             self.offset_x, self.offset_y, GRID_SIZE * TILE_SIZE, GRID_SIZE * TILE_SIZE
@@ -255,6 +286,21 @@ class Board:
                        pygame.draw.rect(
                               surface, (255, 255, 255), tile_rect, width=1, border_radius=10
                        )
+                if self.hint_positions and (r, c) in self.hint_positions:
+                    pulse = abs(pygame.time.get_ticks() % 1000 - 500) // 4
+                    hint_rect = pygame.Rect(
+                        x + 2 - pulse // 4,
+                        y + 2 - pulse // 4,
+                        TILE_SIZE - 4 + pulse // 2,
+                        TILE_SIZE - 4 + pulse // 2
+                    )
+                    pygame.draw.rect(
+                        surface,
+                        (255, 255, 255),
+                        hint_rect,
+                        width=3,
+                        border_radius=10
+                    )
 
                 if self.selected == (r, c):
                     sel_x = self.offset_x + c * TILE_SIZE
