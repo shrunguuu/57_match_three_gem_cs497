@@ -15,7 +15,7 @@ GEM_COLORS = [
 
 class Gem:
    
-    def __init__(self, color, target_row, col):
+    def __init__(self, color, target_row, col, is_bomb=False, bomb_direction=None):
         self.color = color
         self.target_row = target_row
         self.col = col
@@ -145,14 +145,6 @@ class Board:
                     self.bomb_matches.append((bomb_row, c, "column"))
 
         return matched
-    
-    
-    
-
-    
-
-    
-
     def drop_and_refill(self):
         for c in range(GRID_SIZE):
             empty_slots = 0
@@ -180,9 +172,23 @@ class Board:
             matches = self.find_matches()
             if not matches:
                 break
-           
+            bomb_to_create = None
+            bomb_color = None
+
+             if self.bomb_matches:
+                r, c, direction = self.bomb_matches[0]
+                if self.grid[r][c]:
+                  bomb_to_create = (r, c, direction)
+                  bomb_color = self.grid[r][c].color
+
             for r, c in matches:
                 self.grid[r][c] = None
+            if bomb_to_create:
+              r, c, direction = bomb_to_create
+              bomb = Gem(bomb_color, r, c, True, direction)
+              bomb.current_y = r * TILE_SIZE
+              bomb.target_y = r * TILE_SIZE
+              self.grid[r][c] = bomb
             
             self.score += len(matches) * 10 * cascade
                 
@@ -240,10 +246,15 @@ class Board:
                     y = self.offset_y + gem.current_y
                     tile_rect = pygame.Rect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4)
 
-                    pygame.draw.rect(surface, gem.color, tile_rect, border_radius=10)
-                    pygame.draw.rect(
-                        surface, (255, 255, 255), tile_rect, width=1, border_radius=10
-                    )
+                    if gem.is_bomb:
+                       pygame.draw.rect(surface, gem.color, tile_rect, border_radius=10)
+                       pygame.draw.rect(surface, (255, 215, 0), tile_rect, width=4, border_radius=10)
+                       pygame.draw.circle(surface, (20, 20, 20), tile_rect.center, 10)
+                    else:
+                       pygame.draw.rect(surface, gem.color, tile_rect, border_radius=10)
+                       pygame.draw.rect(
+                              surface, (255, 255, 255), tile_rect, width=1, border_radius=10
+                       )
 
                 if self.selected == (r, c):
                     sel_x = self.offset_x + c * TILE_SIZE
