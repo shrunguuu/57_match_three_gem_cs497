@@ -94,72 +94,64 @@ class Board:
         r1, c1 = pos1
         r2, c2 = pos2
         return abs(r1 - r2) + abs(c1 - c2) == 1
-
     def find_matches(self):
-    """Find horizontal and vertical matches and detect 4-in-a-row bombs."""
-      matched = set()
-      self.bomb_matches = []
-   # Horizontal matches
-      for r in range(GRID_SIZE):
-          c = 0
-          while c < GRID_SIZE:
-            if self.grid[r][c] is None:
-                c += 1
-                continue
-            color = self.grid[r][c].color
-            start = c
+        matched = set()
+        self.bomb_matches = []
 
-            while (
-                c < GRID_SIZE
-                and self.grid[r][c] is not None
-                and self.grid[r][c].color == color
-            ):
-                c += 1
+        for r in range(GRID_SIZE):
+            c = 0
+            while c < GRID_SIZE:
+                if self.grid[r][c] is None:
+                    c += 1
+                    continue
 
-             length = c - start
+                color = self.grid[r][c].color
+                start = c
 
-             if length >= 3:
-                for col in range(start, c):
-                    matched.add((r, col))
+                while c < GRID_SIZE and self.grid[r][c] is not None and self.grid[r][c].color == color:
+                    c += 1
 
-             if length >= 4:
-                bomb_col = start + length // 2
-                self.bomb_matches.append(
-                    (r, bomb_col, "row")
-                )
+                length = c - start
 
-    # Vertical matches
-      for c in range(GRID_SIZE):
-         r = 0
+                if length >= 3:
+                    for col in range(start, c):
+                        matched.add((r, col))
 
-          while r < GRID_SIZE:
-             if self.grid[r][c] is None:
-                r += 1
-                continue
+                if length >= 4:
+                    bomb_col = start + length // 2
+                    self.bomb_matches.append((r, bomb_col, "row"))
 
-             color = self.grid[r][c].color
-             start = r
+        for c in range(GRID_SIZE):
+            r = 0
+            while r < GRID_SIZE:
+                if self.grid[r][c] is None:
+                    r += 1
+                    continue
 
-            while (
-                r < GRID_SIZE
-                and self.grid[r][c] is not None
-                and self.grid[r][c].color == color
-            ):
-                r += 1
+                color = self.grid[r][c].color
+                start = r
 
-             length = r - start
+                while r < GRID_SIZE and self.grid[r][c] is not None and self.grid[r][c].color == color:
+                    r += 1
 
-             if length >= 3:
-                for row in range(start, r):
-                    matched.add((row, c))
+                length = r - start
 
-             if length >= 4:
-                bomb_row = start + length // 2
-                self.bomb_matches.append(
-                    (bomb_row, c, "column")
-                )
+                if length >= 3:
+                    for row in range(start, r):
+                        matched.add((row, c))
 
-    return matched
+                if length >= 4:
+                    bomb_row = start + length // 2
+                    self.bomb_matches.append((bomb_row, c, "column"))
+
+        return matched
+    
+    
+    
+
+    
+
+    
 
     def drop_and_refill(self):
         for c in range(GRID_SIZE):
